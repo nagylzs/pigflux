@@ -165,7 +165,7 @@ def main():
                 column_map = {desc.name: idx for idx, desc in enumerate(cur.description)}
                 fields = {field: row[column_map[field]] for field in test.fields}
                 fields["q_elapsed"] = q_elapsed
-                tags = {database_name: database_name}
+                tags = {"database": database_name}
                 tags.update(test.tags)
                 point = dict(measurement=test.measurement, tags=tags, fields=fields)
                 for influx_name in test.influxes:

@@ -32,7 +32,7 @@ Each test can contain the following values:
 
 * **measurement** - destination measurement name for the test
 * **tags** - an object (key-value pairs) that will be used for tagging the measurement. Please note that InfluxDb
-  supports string tag values only.
+  supports string tag values only. The name of the database will be added as an extra tag called `database`. 
 * **sql** - an SQL SELECT command that will be used to fetch measurement data from the PostgreSQL database
 * **fields** - a list of field names, they will be used to access measurement values from the fetched data.
 * **order** - a number that will be used to determine the order of execution. When not given, it defaults to 100.
@@ -74,4 +74,8 @@ The easiest way to run pigflux is to use the [non-sucking service manager](https
   - Carefully check options on "Exit actions" tab. If you choose to use
     "restart application" then you should always set "deplay restart by"
     to a sensible value.
-  
+    
+## TODO
+
+There should be a way to merge tags from ancestor/template tests. The current implementation simply overwrites all tags.
+Possible solution would be to add a new global `tags` section, and add a new `merge_tags` property to tests. 
