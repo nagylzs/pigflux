@@ -6,7 +6,7 @@ Report statistics from postgresql database to influxdb. You can configure multip
 
 The recommended way is to use pipenv to create a virtual environment:
 
-    git clone git@gitlab.mess.hu:devops/pigflux.git
+    git clone git@github.com:nagylzs/pigflux.git
     cd pigflux
     pipenv install --skip-lock
 
