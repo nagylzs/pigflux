@@ -1,0 +1,6 @@
+__pycache__/
+pigflux.yml
+nssm.exe
+stderr
+
+stdout

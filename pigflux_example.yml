@@ -1,0 +1,56 @@
+databases:
+  database_01:
+    host: 'host01.com'
+    port: 5432
+    database: 'database_name_01'
+    user: 'user_name_01'
+    password: 'password_01'
+  database_02:
+    host: 'host02.com'
+    port: 5432
+    database: 'database_name_02'
+    user: 'user_name_02'
+    password: 'password_02'
+influxes:
+  influx_srv_01:
+    host: "host_03.com"
+    port: 443
+    ssl: true
+    verify_ssl: true
+    database: "database_name"
+    username: "user_name"
+    password: "password"
+  influx_srv_02:
+    host: "host_04.com"
+    port: 443
+    ssl: true
+    verify_ssl: true
+    database: "database_name"
+    username: "user_name"
+    password: "password"
+tests:
+  defaults:
+    is_template: true
+    databases: [ "database_01", "database_02" ]
+    influxes: [ "influx_srv_01", "influx_srv_02" ]
+    tags:
+      tag1: "value1"
+      tag2: "value2"
+  measurement_01:
+    order: 1
+    measurement: "measurement_name_01"
+    inherit_from: "defaults"
+    fields: [ "field1", "field2" ]
+    sql: |
+      select
+        field1, field2
+      from table_name_01 order by 2 limit 1
+  measurement_02:
+    order: 2
+    measurement: "measurement_name_02"
+    inherit_from: "defaults"
+    fields: [ "field3", "field4" ]
+    sql: |
+      select
+        field3, field4
+      from table_name_02 order by 2 limit 1
