@@ -1,22 +1,26 @@
-import sys
-import os
-import time
 import argparse
-import pprint
+import os
+import sys
+import time
 import traceback
+from dataclasses import dataclass, asdict
+from typing import Optional, Dict, Type, List
 
 import psycopg2
-
-from influxdb import InfluxDBClient
+import mysql.connector
 import yaml
+from influxdb import InfluxDBClient
 from yaml2dataclass import Schema, SchemaPath
 
-from typing import Optional, Dict, Type, Union, List
-from dataclasses import dataclass, asdict, field
+drivers = {
+    "postgres": psycopg2,
+    "mysql": mysql.connector
+}
 
 
 @dataclass
 class DatabaseConfiguration(Schema):
+    driver: str
     host: str
     port: int
     database: str
@@ -148,7 +152,17 @@ def main():
     tests = sorted(config.tests.values(), key=lambda test: test.order)
 
     def connect(database_name):
-        return psycopg2.connect(**asdict(config.databases[database_name]))
+        cfg = asdict(config.databases[database_name])
+        if "driver" in cfg:
+            driver_name = cfg["driver"]
+            del cfg["driver"]
+        else:
+            driver_name = "postgres"
+        try:
+            driver = drivers[driver_name]
+        except KeyError:
+            raise ValueError("Unknown driver %s (valid drivers: %s)" % (driver_name, repr(list(drivers.keys()))))
+        return driver.connect(**cfg)
 
     # Collect data
     points = {influx_name: [] for influx_name in config.influxes}
@@ -162,10 +176,10 @@ def main():
                 cur.execute(test.sql)
                 row = cur.fetchone()
                 q_elapsed = time.time() - q_started
-                column_map = {desc.name: idx for idx, desc in enumerate(cur.description)}
+                column_map = {desc[0]: idx for idx, desc in enumerate(cur.description)}
                 fields = {field: row[column_map[field]] for field in test.fields}
                 fields["q_elapsed"] = q_elapsed
-                tags = {"database": database_name}
+                tags = {"database_name": database_name}
                 tags.update(test.tags)
                 point = dict(measurement=test.measurement, tags=tags, fields=fields)
                 for influx_name in test.influxes:

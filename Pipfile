@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 psycopg2 = "*"
+mysql-connector-python = "*"
 pyyaml = "*"
 yaml2dataclass = "*"
 influxdb = "*"

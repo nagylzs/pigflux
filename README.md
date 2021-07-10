@@ -1,6 +1,6 @@
 # pigflux
 
-Report statistics from postgresql database to influxdb. You can configure multiple postgresql and influxdb instances.
+Report statistics from postgresql/mysql database to influxdb. You can configure multiple postgresql/mysql and influxdb instances.
 
 ## Installation
 
@@ -9,6 +9,8 @@ The recommended way is to use pipenv to create a virtual environment:
     git clone git@github.com:nagylzs/pigflux.git
     cd pigflux
     pipenv install --skip-lock
+
+If you encounter problems with psycopg2 installation, you may try to replace "psycopg2" with "psycopg2-binary" in `Pipenv` file.
 
 Since pigflux is a single Python script, you can also install the required packages globally instead. Check `Pipenv`
 file for required packages.
