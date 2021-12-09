@@ -49,7 +49,7 @@ You can start pigflux from command line or cron:
 
   pipenv run python pigflux.py -c pigflux.yml
 
-Use `--help` for command line options, including but not limited to:
+Use `--help` for command line options.
 
 ## Run as a windows service
 
