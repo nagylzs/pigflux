@@ -244,6 +244,8 @@ parser.add_argument('-c', "--config", dest="config", default=None,
 parser.add_argument("--config-dir", dest="config_dir", default=None,
                     help="Configuration directory. All config files with .yml extension will be processed one by one. "
                          "")
+parser.add_argument("--config-encoding", dest="config_encoding", default="utf-8",
+                    help="Encoding for the config file(s), defaults to utf-8")
 parser.add_argument('-n', "--count", dest="count", default=1, type=int,
                     help="Number of test runs. Default is one. Use -1 to run indefinitely.")
 parser.add_argument('-w', "--wait", dest="wait", default=10, type=float,
@@ -292,7 +294,7 @@ while args.count < 0 or index < args.count:
     for config_file in config_files:
         if not os.path.isfile(config_file):
             parser.error("Cannot open %s" % config_file)
-        config = load_app_config(open(config_file, "r"))
+        config = load_app_config(open(config_file, "r", encoding=args.config_encoding))
         main()
     elapsed = time.time() - started
 
