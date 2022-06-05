@@ -3,7 +3,7 @@ import os
 import sys
 import time
 import traceback
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from typing import Optional, Dict, Type, List
 
 import psycopg2
@@ -94,9 +94,9 @@ class Test(Schema):
 @dataclass
 class AppConfiguration(Schema):
     databases: Dict[str, DatabaseConfiguration]
-    influxes: Dict[str, InfluxDbConfiguration]
-    influxes2: Dict[str, InfluxDb2Configuration]
     tests: Dict[str, Test]
+    influxes: Dict[str, InfluxDbConfiguration] = field(default_factory=lambda: {})
+    influxes2: Dict[str, InfluxDb2Configuration] = field(default_factory=lambda: {})
 
     @classmethod
     def _load_dict(cls, props_dict, dest_cls: Type[Schema], add_name: bool = False):
