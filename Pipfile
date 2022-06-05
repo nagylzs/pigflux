@@ -9,5 +9,6 @@ mysql-connector-python = "*"
 pyyaml = "*"
 yaml2dataclass = "*"
 influxdb = "*"
+influxdb-client = "*"
 
 [dev-packages]

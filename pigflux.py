@@ -9,7 +9,9 @@ from typing import Optional, Dict, Type, List
 import psycopg2
 import mysql.connector
 import yaml
-from influxdb import InfluxDBClient
+import influxdb
+import influxdb_client
+from influxdb_client.client.write_api import SYNCHRONOUS
 from yaml2dataclass import Schema, SchemaPath
 
 drivers = {
@@ -43,6 +45,17 @@ class InfluxDbConfiguration(Schema):
         if "tags" in result:
             del result["tags"]
         return result
+
+
+@dataclass
+class InfluxDb2Configuration(Schema):
+    url: str
+    org: str
+    bucket: str
+    token: str
+
+    def get_client_params(self):
+        return dict(url=self.url, token=self.token)
 
 
 @dataclass
@@ -82,6 +95,7 @@ class Test(Schema):
 class AppConfiguration(Schema):
     databases: Dict[str, DatabaseConfiguration]
     influxes: Dict[str, InfluxDbConfiguration]
+    influxes2: Dict[str, InfluxDb2Configuration]
     tests: Dict[str, Test]
 
     @classmethod
@@ -99,6 +113,7 @@ class AppConfiguration(Schema):
     def scm_convert(cls, values: dict, path: SchemaPath):
         values["databases"] = cls._load_dict(values["databases"], DatabaseConfiguration)
         values["influxes"] = cls._load_dict(values["influxes"], InfluxDbConfiguration)
+        values["influxes2"] = cls._load_dict(values["influxes2"], InfluxDb2Configuration)
         values["tests"] = cls._load_dict(values["tests"], Test, True)
         return values
 
@@ -166,6 +181,7 @@ def main():
 
     # Collect data
     points = {influx_name: [] for influx_name in config.influxes}
+    points2 = {influx_name: [] for influx_name in config.influxes2}
     for test in tests:
         if not test.is_template:
             info("    Running test %s" % test.name)
@@ -183,16 +199,36 @@ def main():
                 tags.update(test.tags)
                 point = dict(measurement=test.measurement, tags=tags, fields=fields)
                 for influx_name in test.influxes:
-                    points[influx_name].append(point)
+                    if influx_name in points:
+                        points[influx_name].append(point)
+                    elif influx_name in points2:
+                        points2[influx_name].append(point)
+                    else:
+                        raise KeyError("Invalid influx name: %s" % influx_name)
 
     for influx_name, influx in config.influxes.items():
-        points = points[influx_name]
-        if points:
-            info("    Sending %d point(s) to influxdb %s" % (len(points), influx_name))
+        pts = points[influx_name]
+        if pts:
+            info("    Sending %d point(s) to influxdb v1 %s" % (len(pts), influx_name))
             try:
                 influx = config.influxes[influx_name]
-                client = InfluxDBClient(**asdict(influx))
-                client.write_points(points)
+                client = influxdb.InfluxDBClient(influx.get_client_params())
+                client.write_points(pts)
+            except:
+                if args.halt_on_send_error:
+                    raise
+                else:
+                    traceback.print_exc(file=sys.stderr)
+
+    for influx_name, influx in config.influxes2.items():
+        pts = points2[influx_name]
+        if pts:
+            info("    Sending %d point(s) to influxdb v2 %s" % (len(pts), influx_name))
+            try:
+                influx2 = config.influxes2[influx_name]
+                client = influxdb_client.InfluxDBClient(influx2.get_client_params())
+                write_api = client.write_api(write_options=SYNCHRONOUS)
+                write_api.write(bucket=influx2.bucket, org=influx2.bucket, record=pts)
             except:
                 if args.halt_on_send_error:
                     raise
