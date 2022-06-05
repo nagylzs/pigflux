@@ -5,12 +5,14 @@ databases:
     database: 'database_name_01'
     user: 'user_name_01'
     password: 'password_01'
+    driver: "postgres"
   database_02:
     host: 'host02.com'
     port: 5432
     database: 'database_name_02'
     user: 'user_name_02'
     password: 'password_02'
+    driver: "postgres"
 influxes:
   influx_srv_01:
     host: "host_03.com"

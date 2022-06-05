@@ -62,7 +62,8 @@ class InfluxDb2Configuration(Schema):
 class Test(Schema):
     name: str
     databases: Optional[List[str]] = None  # databases to run test on
-    influxes: Optional[List[str]] = None  # influxes to send test results to
+    influxes: Optional[List[str]] = None  # influxes v1 to send test results to
+    influxes2: Optional[List[str]] = None  # influxes v2 to send test results to
     measurement: Optional[str] = None  # name of the measurement
     tags: Optional[Dict[str, str]] = None  # a dict of tags to add to the points
     fields: Optional[List[str]] = None  # list of field names
@@ -71,7 +72,7 @@ class Test(Schema):
     is_template: Optional[bool] = False  # Set flag if this is a template
     inherit_from: Optional[str] = None  # Inherit properties from
 
-    INHERIT_PROP_NAMES = ["databases", "influxes", "measurement", "tags", "fields", "sql", "order"]
+    INHERIT_PROP_NAMES = ["databases", "influxes", "influxes2", "measurement", "tags", "fields", "sql", "order"]
 
     @staticmethod
     def bind_prop(prop_name, used: List[str]):
@@ -86,9 +87,16 @@ class Test(Schema):
             for database in self.databases:
                 if database not in config.databases:
                     error("%s: invalid database %s" % (self.name, database))
-            for influx in self.influxes:
-                if influx not in config.influxes:
-                    error("%s: invalid influx %s" % (self.name, influx))
+            if self.influxes:
+                for influx in self.influxes:
+                    if influx not in config.influxes:
+                        error("%s: invalid influx v1 %s" % (self.name, influx))
+            if self.influxes2:
+                for influx in self.influxes2:
+                    if influx not in config.influxes2:
+                        error("%s: invalid influx v2 %s" % (self.name, influx))
+            if not self.influxes and not self.influxes2:
+                error("%s: you must give at least one influx or influx2 target" % self.name)
 
 
 @dataclass
@@ -112,8 +120,8 @@ class AppConfiguration(Schema):
     @classmethod
     def scm_convert(cls, values: dict, path: SchemaPath):
         values["databases"] = cls._load_dict(values["databases"], DatabaseConfiguration)
-        values["influxes"] = cls._load_dict(values["influxes"], InfluxDbConfiguration)
-        values["influxes2"] = cls._load_dict(values["influxes2"], InfluxDb2Configuration)
+        values["influxes"] = cls._load_dict(values.get("influxes", {}), InfluxDbConfiguration)
+        values["influxes2"] = cls._load_dict(values.get("influxes2", {}), InfluxDb2Configuration)
         values["tests"] = cls._load_dict(values["tests"], Test, True)
         return values
 
@@ -146,8 +154,11 @@ def inherit_props(name: str, used: List[str]):
             if getattr(test, prop_name) is None:
                 inherit_from = config.tests[test.inherit_from]
                 setattr(test, prop_name, getattr(inherit_from, prop_name))
-            if not test.is_template and getattr(test, prop_name) is None:
-                error("tests.%s.%s is required" % (name, prop_name))
+            if prop_name not in ["influxes", "influxes2"]:
+                if not test.is_template and getattr(test, prop_name) is None:
+                    error("tests.%s.%s is required" % (name, prop_name))
+        if not test.is_template and getattr(test, "influxes") is None and getattr(test, "influxes2") is None:
+            error("tests.%s.influxes or tests.%s.influxes2 is required" % (name, name))
 
 
 def info(*values):
@@ -197,14 +208,20 @@ def main():
                 fields["q_elapsed"] = q_elapsed
                 tags = {"database_name": database_name}
                 tags.update(test.tags)
-                point = dict(measurement=test.measurement, tags=tags, fields=fields)
-                for influx_name in test.influxes:
-                    if influx_name in points:
-                        points[influx_name].append(point)
-                    elif influx_name in points2:
-                        points2[influx_name].append(point)
-                    else:
-                        raise KeyError("Invalid influx name: %s" % influx_name)
+                if test.influxes:
+                    point = dict(measurement=test.measurement, tags=tags, fields=fields)
+                    for influx_name in test.influxes:
+                        if influx_name in points:
+                            points[influx_name].append(point)
+                if test.influxes2:
+                    point2 = influxdb_client.Point(test.measurement)
+                    for name, value in tags.items():
+                        point2.tag(name, value)
+                    for name, value in fields.items():
+                        point2.field(name, value)
+                    for influx_name in test.influxes2:
+                        if influx_name in points2:
+                            points2[influx_name].append(point2)
 
     for influx_name, influx in config.influxes.items():
         pts = points[influx_name]
@@ -212,7 +229,7 @@ def main():
             info("    Sending %d point(s) to influxdb v1 %s" % (len(pts), influx_name))
             try:
                 influx = config.influxes[influx_name]
-                client = influxdb.InfluxDBClient(influx.get_client_params())
+                client = influxdb.InfluxDBClient(**influx.get_client_params())
                 client.write_points(pts)
             except:
                 if args.halt_on_send_error:
@@ -226,9 +243,9 @@ def main():
             info("    Sending %d point(s) to influxdb v2 %s" % (len(pts), influx_name))
             try:
                 influx2 = config.influxes2[influx_name]
-                client = influxdb_client.InfluxDBClient(influx2.get_client_params())
+                client = influxdb_client.InfluxDBClient(**influx2.get_client_params())
                 write_api = client.write_api(write_options=SYNCHRONOUS)
-                write_api.write(bucket=influx2.bucket, org=influx2.bucket, record=pts)
+                write_api.write(bucket=influx2.bucket, org=influx2.org, record=pts)
             except:
                 if args.halt_on_send_error:
                     raise
