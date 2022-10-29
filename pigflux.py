@@ -323,7 +323,7 @@ while args.count < 0 or index < args.count:
         if remaining > 0:
             if not args.silent:
                 info("Pass #%d elapsed %.2f sec, waiting %.2f sec for next." % (index, elapsed, remaining))
-            time.sleep(args.wait)
+            time.sleep(remaining)
     else:
         info("Pass #%d elapsed %.2f sec" % (index, elapsed))
 
