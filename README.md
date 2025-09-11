@@ -1,19 +1,11 @@
 # pigflux
 
-Report statistics from postgresql/mysql database to influxdb. You can configure multiple postgresql/mysql and influxdb instances.
+Report statistics from postgresql/mysql database to influxdb and/or postgresql. 
+You can configure multiple postgresql/mysql and influxdb instances.
 
-## Installation
+## Build
 
-The recommended way is to use pipenv to create a virtual environment:
-
-    git clone git@github.com:nagylzs/pigflux.git
-    cd pigflux
-    pipenv install --skip-lock
-
-If you encounter problems with psycopg2 installation, you may try to replace "psycopg2" with "psycopg2-binary" in `Pipenv` file.
-
-Since pigflux is a single Python script, you can also install the required packages globally instead. Check `Pipenv`
-file for required packages.
+TODO
 
 ## Configuration
 
@@ -22,7 +14,8 @@ Copy `pigflux_example.yml` into `pigflux.yml`, and edit to your needs.
 Main configuration sections:
 
 * **databases** - named configurations for PostgreSQL instances
-* **influxes** - named configurations for InfluxDb instances
+* **influxes** - named configurations for InfluxDb v1 instances
+* **influxes2** - named configurations for InfluxDb v2 instances
 * **tests** - named configurations for test queries
 
 Each test can contain the following values:
@@ -30,7 +23,7 @@ Each test can contain the following values:
 * **databases** - a list of database configuration names. The test will be run on the given databases. (
   You can run the same test on multiple PostgreSQL databases)
 
-* **influxes** - a list of influxdb configuration names. Test results will be sent to the given influxdb databases.
+* **influxes** - a list of influxdb (v1 or v2) configuration names. Test results will be sent to the given influxdb databases.
 
 * **measurement** - destination measurement name for the test
 * **tags** - an object (key-value pairs) that will be used for tagging the measurement. Please note that InfluxDb
@@ -60,22 +53,7 @@ The easiest way to run pigflux is to use the [non-sucking service manager](https
 
     nssm.exe install pigflux
   
-* Use the following settings:
-
-  - Application path: point to pipenv.exe (e.g. "C:\Program Files\Python39\python.exe")
-  - Startup directory: point to the directory containing pigflux.py and Pipenv
-  - Arguments: `run python pigflux.py --count=-1 --silent --config=pigflux.yml` but pleae refer
-    to `--help` for all options.
-  - Change your display name, description, startup type as desired.
-  - If you have used pipenv, then give your credentials on the "Log on" tab.
-    Also, you need [to enable "service log on"](https://docs.microsoft.com/en-us/system-center/scsm/enable-service-log-on-sm?view=sc-sm-2019#enable-service-log-on-through-a-local-group-policy) for your user account.
-  - Alternatively, if you have installed python and all required packages globally, then
-    you can use local system account.
-  - On the "Shutdown" tab, leave "Control+C" checked, but uncheck
-    all others (WM_CLOSE, WM_QUIT, Terminate process)
-  - Carefully check options on "Exit actions" tab. If you choose to use
-    "restart application" then you should always set "deplay restart by"
-    to a sensible value.
+* Use the following settings: TODO
     
 ## TODO
 

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-cd /docker/pigflux
-pipenv run python pigflux.py --count=-1 --wait=20 --silent
