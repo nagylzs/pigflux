@@ -11,6 +11,7 @@ type Config struct {
 	Databases map[string]Database `yaml:"databases"`
 	Influxes  map[string]Influx   `yaml:"influxes"`
 	Influxes2 map[string]Influx2  `yaml:"influxes2"`
+	Tests     map[string]Test     `yaml:"tests"`
 }
 
 type Database struct {
@@ -25,8 +26,8 @@ type Database struct {
 type Influx struct {
 	Host      string `yaml:"host"`
 	Port      uint16 `yaml:"port"`
-	SSL       bool   `yaml:"ssl,default=true"`
-	VerifySSL bool   `yaml:"verify_ssl,default=true"`
+	SSL       bool   `yaml:"ssl" default:"true"`
+	VerifySSL bool   `yaml:"verify_ssl" default:"true"`
 	Database  string `yaml:"database"`
 	Username  string `yaml:"username"`
 	Password  string `yaml:"password"`
@@ -37,6 +38,19 @@ type Influx2 struct {
 	Org    string `yaml:"org"`
 	Bucket string `yaml:"bucket"`
 	Token  string
+}
+
+type Test struct {
+	IsTemplate  bool              `yaml:"is_template"`
+	Databases   []string          `yaml:"databases"`
+	Influxes    []string          `yaml:"influxes"`
+	Influxes2   []string          `yaml:"influxes2"`
+	Tags        map[string]string `yaml:"tags"`
+	Fields      []string          `yaml:"fields"`
+	Order       int               `yaml:"order"`
+	Measurement string            `yaml:"measurement"`
+	InheritFrom string            `yaml:"inherit_from"`
+	SQL         string            `yaml:"sql"`
 }
 
 func LoadConfig(path string) (Config, error) {
