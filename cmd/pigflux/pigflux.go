@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -70,6 +71,13 @@ func main() {
 }
 
 func runMain(args config.PigfluxCLIArgs, posArgs []string) error {
+	cfg, err := config.LoadConfig(args.ConfigFile)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+	println(fmt.Sprintf("%v", cfg))
+
 	for !signal.IsStopping() {
 		time.Sleep(time.Second)
 	}

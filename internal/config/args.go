@@ -11,4 +11,5 @@ type CLIArgs struct {
 
 type PigfluxCLIArgs struct {
 	CLIArgs
+	ConfigFile string `short:"c" long:"config" description:"Path to config file"`
 }
