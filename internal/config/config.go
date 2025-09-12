@@ -53,6 +53,35 @@ type Test struct {
 	SQL         string            `yaml:"sql"`
 }
 
+func (t Test) Check(config *Config) error {
+	if t.IsTemplate {
+		return nil
+	}
+	if t.Databases == nil || len(t.Databases) == 0 {
+		return fmt.Errorf("no databases specified")
+	}
+	if len(t.Influxes) > 0 {
+		for _, influx := range t.Influxes {
+			_, ok := config.Influxes[influx]
+			if !ok {
+				return fmt.Errorf("influx '%s' does not exist", influx)
+			}
+		}
+	}
+	if len(t.Influxes2) > 0 {
+		for _, influx2 := range t.Influxes2 {
+			_, ok := config.Influxes2[influx2]
+			if !ok {
+				return fmt.Errorf("influx2 '%s' does not exist", influx2)
+			}
+		}
+	}
+	if len(t.Influxes) == 0 && len(t.Influxes2) == 0 {
+		return fmt.Errorf("no influxes or influxes2 specified")
+	}
+	return nil
+}
+
 func LoadConfig(path string) (Config, error) {
 	var result Config
 	if path == "" {

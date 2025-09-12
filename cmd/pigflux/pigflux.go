@@ -15,6 +15,7 @@ import (
 	"github.com/nagylzs/pigflux/internal/config"
 	"github.com/nagylzs/pigflux/internal/signal"
 	"github.com/nagylzs/pigflux/internal/version"
+	"github.com/nagylzs/set"
 )
 
 func main() {
@@ -33,6 +34,21 @@ func main() {
 	if args.ShowVersion {
 		version.PrintVersion()
 		os.Exit(0)
+	}
+
+	cnt := 0
+	if args.Debug {
+		cnt++
+	}
+	if args.Verbose {
+		cnt++
+	}
+	if args.Silent {
+		cnt++
+	}
+	if cnt > 1 {
+		println("Only one of --verbose, --debug, or --silent can be specified")
+		os.Exit(1)
 	}
 
 	// Set loglevel
@@ -76,6 +92,12 @@ func main() {
 }
 
 func runMain(args config.PigfluxCLIArgs, posArgs []string) error {
+	wait, err := time.ParseDuration(args.Wait)
+	if err != nil {
+
+		return fmt.Errorf("cannot parse wait time: %v", err.Error())
+	}
+
 	if args.ConfigFiles == nil || len(args.ConfigFiles) == 0 {
 		args.ConfigFiles = make([]string, 0)
 	}
@@ -101,11 +123,121 @@ func runMain(args config.PigfluxCLIArgs, posArgs []string) error {
 		configs = append(configs, cfg)
 	}
 
-	println(fmt.Sprintf("%v", configs))
-
-	for !signal.IsStopping() {
-		time.Sleep(time.Second)
+	err = parseConfigs(&configs)
+	if err != nil {
+		return err
 	}
+
+	// println(fmt.Sprintf("%v", configs))
+	index := 0
+	for args.Count < 0 || index < args.Count {
+		if signal.IsStopping() {
+			break
+		}
+		if args.Count != 1 {
+			slog.Info(fmt.Sprintf("Pass %d started", index+1))
+		}
+		started := time.Now()
+		for _, cf := range configs {
+			err := runConfig(cf)
+			if err != nil {
+				slog.Error(err.Error())
+			}
+		}
+		if signal.IsStopping() {
+			break
+		}
+		elapsed := time.Since(started)
+		index += 1
+		isLast := (args.Count > 0) && (index == args.Count)
+		if !isLast {
+			remaining := wait - elapsed
+			if remaining <= 0 {
+				slog.Info(fmt.Sprintf("Pass %d elapsed %v", index, elapsed))
+				continue
+			}
+			slog.Info(fmt.Sprintf("Pass %d elapsed %v waiting %s for next", index, elapsed, remaining))
+			time.Sleep(remaining)
+		}
+	}
+
+	signal.Stop(0)
+	return nil
+}
+
+func parseConfigs(configs *[]config.Config) error {
+	for i := 0; i < len(*configs); i++ {
+		err := parseConfig(&(*configs)[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func parseConfig(config *config.Config) error {
+	// Test for circular references, inherit properites
+	used := set.NewSet[string]()
+	for name := range config.Tests {
+		err := inheritProps(config, name, used)
+		if err != nil {
+			return err
+		}
+	}
+	for name := range config.Tests {
+		err := config.Tests[name].Check(config)
+		if err != nil {
+			return fmt.Errorf("test '%s': %w", name, err)
+		}
+	}
+	return nil
+}
+
+func inheritProps(config *config.Config, name string, used *set.Set[string]) error {
+	test := config.Tests[name]
+	ref := test.InheritFrom
+	if ref == "" {
+		return nil
+	}
+	if used.Contains(ref) {
+		return fmt.Errorf("circular reference tests.%s.inherit_from=%s (used=%v)", name, ref, used)
+	}
+	ihf, ok := config.Tests[ref]
+	if !ok {
+		return fmt.Errorf("invalid reference tests.%s.inherit_from=%s", name, ref)
+	}
+	used.Add(ref)
+	err := inheritProps(config, ref, used)
+	if err != nil {
+		return err
+	}
+	used.Remove(ref)
+
+	if test.Databases == nil || len(test.Databases) == 0 {
+		test.Databases = ihf.Databases
+	}
+	if test.Influxes == nil || len(test.Influxes) == 0 {
+		test.Influxes = ihf.Influxes
+	}
+	if test.Influxes2 == nil || len(test.Influxes2) == 0 {
+		test.Influxes2 = ihf.Influxes2
+	}
+	if test.Tags == nil || len(test.Tags) == 0 {
+		test.Tags = ihf.Tags
+	}
+	if test.Fields == nil || len(test.Fields) == 0 {
+		test.Fields = ihf.Fields
+	}
+	if test.Measurement == "" {
+		test.Measurement = ihf.Measurement
+	}
+	if test.SQL == "" {
+		test.SQL = ihf.SQL
+	}
+	if test.Order == 0 {
+		test.Order = ihf.Order
+	}
+	config.Tests[name] = test
 	return nil
 }
 
@@ -129,4 +261,8 @@ func listConfigFiles(cwd string) ([]string, error) {
 		result = append(result, fullPath)
 	}
 	return result, nil
+}
+
+func runConfig(cf config.Config) error {
+	return fmt.Errorf("not implemented")
 }

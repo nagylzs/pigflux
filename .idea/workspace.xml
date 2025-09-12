@@ -7,6 +7,8 @@
     <list default="true" id="42c3e033-2e8d-4c5a-888e-bf42a0e43dd3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/pigflux/pigflux.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/pigflux/pigflux.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/config/args.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/args.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/config.go" afterDir="false" />
     </list>
@@ -39,7 +41,7 @@
     "DefaultGoTemplateProperty": "Go File",
     "Go Build.go build github.com/nagylzs/pigflux/cmd/pigflux.executor": "Run",
     "Go Build.help.executor": "Run",
-    "Go Build.test.executor": "Debug",
+    "Go Build.test.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.GoLinterPluginOnboarding": "true",
     "RunOnceActivity.GoLinterPluginStorageMigration": "true",
@@ -72,7 +74,7 @@
     <configuration name="test" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="pigflux_go" />
       <working_directory value="$PROJECT_DIR$" />
-      <parameters value="-c pigflux.yml" />
+      <parameters value="-c pigflux.yml --count 3 --wait 10s --debug" />
       <kind value="PACKAGE" />
       <package value="github.com/nagylzs/pigflux/cmd/pigflux" />
       <directory value="$PROJECT_DIR$" />
@@ -107,5 +109,16 @@
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/cmd/pigflux/pigflux.go</url>
+          <line>181</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
