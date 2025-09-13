@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,7 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jessevdk/go-flags"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -189,8 +190,8 @@ func parseConfig(config *config.Config) error {
 		}
 	}
 	for _, db := range config.Databases {
-		if db.Driver != "postgresql" && db.Driver != "mysql" {
-			return fmt.Errorf("database driver %s not supported, only postgresql and mysql are available", db.Driver)
+		if db.Driver != "pgx" && db.Driver != "mysql" {
+			return fmt.Errorf("database driver %s not supported, only pgx and mysql are available", db.Driver)
 		}
 	}
 	for name := range config.Tests {
@@ -285,6 +286,15 @@ func runConfig(cf config.Config) error {
 		}
 		ord[test.Order] = append(ord[test.Order], name)
 	}
+	/*
+		   points = {influx_name: [] for influx_name in config.influxes}
+		   points2 = {influx_name: [] for influx_name in config.influxes2}
+
+			TODO: create points for influxv1 and influxv2, possiblty for influxv3 too
+			see: https://github.com/influxdata/influxdb/tree/1.8/client#getting-started
+			see: https://github.com/influxdata/influxdb-client-go?tab=readme-ov-file#basic-example
+			see: https://github.com/InfluxCommunity/influxdb3-go
+	*/
 	order := slices.Sorted(maps.Keys(ord))
 	for _, o := range order {
 		for _, name := range ord[o] {
@@ -301,39 +311,89 @@ func runTest(cf config.Config, testName string) error {
 	test := cf.Tests[testName]
 	for _, dbname := range test.Databases {
 		slog.Info(fmt.Sprintf("Running test %s on database %s", testName, dbname))
-		ctx, cancel := context.WithTimeout(context.Background(), test.Timeout)
-		_, err := fetchTest(ctx, cf, dbname, test)
-		cancel()
+		//ctx, cancel := context.WithTimeout(context.Background(), test.Timeout)
+		started := time.Now()
+		fields, err := fetchTest(cf, dbname, test)
+		//cancel()
 		if err != nil {
 			return err
 		}
+		elapsed := time.Since(started)
+		fields["q_elapsed"] = elapsed.Seconds()
+		tags := make(map[string]string)
+		tags["database_name"] = dbname
+		for name, tag := range test.Tags {
+			tags[name] = tag
+		}
+		slog.Debug(fmt.Sprintf("Test %s on database %s: fields=%v+ tags=%v+", testName, dbname, fields, tags))
 		/*
-		   cur = conn.cursor()
-		   q_started = time.time()
-		   cur.execute(test.sql)
-		   row = cur.fetchone()
-		   q_elapsed = time.time() - q_started
-		   column_map = {desc[0]: idx for idx, desc in enumerate(cur.description)}
-		   fields = {field: row[column_map[field]] for field in test.fields}
-		   fields["q_elapsed"] = q_elapsed
-		   tags = {"database_name": database_name}
-		   tags.update(test.tags)
+		   if test.influxes:
+		       point = dict(measurement=test.measurement, tags=tags, fields=fields)
+		       for influx_name in test.influxes:
+		           if influx_name in points:
+		               points[influx_name].append(point)
+		   if test.influxes2:
+		       point2 = influxdb_client.Point(test.measurement)
+		       for name, value in tags.items():
+		           point2.tag(name, value)
+		       for name, value in fields.items():
+		           point2.field(name, value)
+		       for influx_name in test.influxes2:
+		           if influx_name in points2:
+		               points2[influx_name].append(point2)
+
 		*/
 	}
 	return nil
 }
 
-func fetchTest(ctx context.Context, cf config.Config, dbname string, test config.Test) (map[string]interface{}, error) {
+func fetchTest(cf config.Config, dbname string, test config.Test) (map[string]interface{}, error) {
 	db := cf.Databases[dbname]
-	if db.Driver == "postgresql" {
-		conn, err := pgx.Connect(ctx, db.DSN)
-		if err != nil {
-			return nil, fmt.Errorf("unable to connect to database %s: %w", dbname, err)
-		}
-		defer conn.Close(ctx)
-		return nil, fmt.Errorf("Not yet!")
-	} else {
-		// https://github.com/go-sql-driver/mysql?tab=readme-ov-file#dsn-data-source-name ???
-		return nil, fmt.Errorf("Not yet!")
+	conn, err := sql.Open(db.Driver, db.DSN)
+	if err != nil {
+		return nil, fmt.Errorf("unable to connect to database %s: %w", dbname, err)
 	}
+	defer conn.Close()
+
+	rows, err := conn.Query(test.SQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]interface{}, len(columns))
+	valuePtrs := make([]interface{}, len(columns))
+
+	for i := range columns {
+		valuePtrs[i] = &values[i]
+	}
+
+	if rows.Next() {
+		err = rows.Scan(valuePtrs...)
+		if err != nil {
+			return nil, err
+		}
+
+		result := make(map[string]interface{})
+		for i, col := range columns {
+			val := values[i]
+
+			// Convert []byte to string for readability
+			if b, ok := val.([]byte); ok {
+				result[col] = string(b)
+			} else {
+				result[col] = val
+			}
+		}
+
+		return result, nil
+	}
+
+	return nil, sql.ErrNoRows
+
 }

@@ -1,59 +1,86 @@
 databases:
+  # databases are used to run tests, and they may also be used to store test results.
   database_01:
-    host: 'host01.com'
-    port: 5432
-    database: 'database_name_01'
-    user: 'user_name_01'
-    password: 'password_01'
-    driver: "postgres"
+    # PostgreSQL example
+    dsn: "postgres://username:password@localhost:5432/database_name"
+    diver: "pgx"
   database_02:
-    host: 'host02.com'
-    port: 5432
-    database: 'database_name_02'
-    user: 'user_name_02'
-    password: 'password_02'
-    driver: "postgres"
+    # MySQL example
+    # https://github.com/go-sql-driver/mysql?tab=readme-ov-file#usage
+    dsn: "postgres://username:password@localhost:5432/database_name"
+    diver: "mysql"
+  database_03:
+    # if you want to use a database to store test results, then you must specify the insert sql
+    # PostgreSQL example
+    dsn: "postgres://username:password@example.com:5432/database_name"
+    diver: "pgx"
+    insert_sql: |
+      INSERT INTO "%MEASUREMENT%"("time",%FIELDNAMES%,%TAGNAMES%) VALUES (now(), %FIELDVALUES% ,%TAGVALUES% )
+  database_04:
+    dsn: "postgres://username:password@example.com:5432/database_name"
+    diver: "pgx"
+    # Alternative sql syntax that uses a jsonb fields for storing fields and tags
+    insert_sql: |
+      INSERT INTO "%MEASUREMENT%"("time",fields,tags) VALUES (now(), %FIELDS_JSON%::jsonb ,%TAG_JSON%::jsonb )
 influxes:
+  # for influx v1 you need address, username, password
+  # see https://github.com/influxdata/influxdb/tree/1.8/client#connecting-to-your-database
   influx_srv_01:
-    host: "host_03.com"
-    port: 443
-    ssl: true
-    verify_ssl: true
-    database: "database_name"
+    host: "http://localhost:8086"
     username: "user_name"
     password: "password"
+    database: "database_name"
   influx_srv_02:
-    host: "host_04.com"
-    port: 443
-    ssl: true
-    verify_ssl: true
-    database: "database_name"
+    host: "http://example.com:8086"
     username: "user_name"
     password: "password"
+    database: "database_name"
 influxes2:
+  # for influx v2, you need an url, and organization, a bucket and a token.
+  # example # https://github.com/influxdata/influxdb-client-go?tab=readme-ov-file#basic-example
   influx2_srv_01:
     url: "https://host_05.com"
     org: "dcce8cedb3dad2dc"
     bucket: "iot01"
     token: "B0fXt_c4hYVUjbpXLnrHkjX-UIBeO0YsvQafascEfdGsdVasE_vFrSQhQpZivx8avwwcsax790yw_dSGyufffw=="
+influxes3:
+  # for influx v3, you can use a connection string
+  # example here https://github.com/InfluxCommunity/influxdb3-go?tab=readme-ov-file#instantiate-using-a-connection-string
+  influx3_srv_01:
+    dsn: "https://cluster.influxdata.io/?token=DATABASE_TOKEN&database=DATABASE_NAME"
 tests:
   defaults:
+    # template will never run, they only serve as a base config that tests can be inherited from
     is_template: true
+    # databases specifies the databases where we run the test, you can list more
     databases: [ "database_01", "database_02" ]
+    # these specify the target influxdb instances where the test results should be sent,
+    # you can specify multiple instances for multiple different types
     influxes: [ "influx_srv_01", "influx_srv_02", "influx2_srv_01" ]
+    influxes2: ["influx2_srv_01"]
+    influxes3: ["influx3_srv_01"]
+    # template tags serve as a base, they are merged with descendants
     tags:
       tag1: "value1"
       tag2: "value2"
   measurement_01:
+    # Now, this is not a template, so it will be executed
+    # Order determines the run order of the tests
     order: 1
+    # Measurement specifies the target measurement/table where the test results will be saved
     measurement: "measurement_name_01"
+    # When inherit_from is given, properties are first inherited from the given parent, and then overwritten
+    # (or for tags, merged!)
     inherit_from: "defaults"
+    # We expect the SQL to returns these two values, and a single row.
     fields: [ "field1", "field2" ]
+    # The SQL that will be used to get values for the fields, it must return a single row
     sql: |
       select
         field1, field2
       from table_name_01 order by 2 limit 1
   measurement_02:
+    # measurement_02 will be run after measurement_01
     order: 2
     measurement: "measurement_name_02"
     inherit_from: "defaults"
