@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -264,5 +266,46 @@ func listConfigFiles(cwd string) ([]string, error) {
 }
 
 func runConfig(cf config.Config) error {
-	return fmt.Errorf("not implemented")
+	// map order values to config names
+	ord := make(map[int][]string)
+	for name, test := range cf.Tests {
+		if test.IsTemplate {
+			continue
+		}
+		_, ok := ord[test.Order]
+		if !ok {
+			ord[test.Order] = make([]string, 0)
+		}
+		ord[test.Order] = append(ord[test.Order], name)
+	}
+	order := slices.Sorted(maps.Keys(ord))
+	for _, o := range order {
+		for _, name := range ord[o] {
+			err := runTest(cf, name)
+			if err != nil {
+				slog.Error(fmt.Sprintf("Error running test %s: %v", name, err))
+			}
+		}
+	}
+	return nil
+}
+
+func runTest(cf config.Config, testName string) error {
+	test := cf.Tests[testName]
+	for _, dbname := range test.Databases {
+		slog.Info(fmt.Sprintf("Running test %s on database %s", testName, dbname))
+		/*
+		   cur = conn.cursor()
+		   q_started = time.time()
+		   cur.execute(test.sql)
+		   row = cur.fetchone()
+		   q_elapsed = time.time() - q_started
+		   column_map = {desc[0]: idx for idx, desc in enumerate(cur.description)}
+		   fields = {field: row[column_map[field]] for field in test.fields}
+		   fields["q_elapsed"] = q_elapsed
+		   tags = {"database_name": database_name}
+		   tags.update(test.tags)
+		*/
+	}
+	return nil
 }
