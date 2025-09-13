@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jessevdk/go-flags"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -186,6 +188,11 @@ func parseConfig(config *config.Config) error {
 			return err
 		}
 	}
+	for _, db := range config.Databases {
+		if db.Driver != "postgresql" && db.Driver != "mysql" {
+			return fmt.Errorf("database driver %s not supported, only postgresql and mysql are available", db.Driver)
+		}
+	}
 	for name := range config.Tests {
 		err := config.Tests[name].Check(config)
 		if err != nil {
@@ -294,6 +301,12 @@ func runTest(cf config.Config, testName string) error {
 	test := cf.Tests[testName]
 	for _, dbname := range test.Databases {
 		slog.Info(fmt.Sprintf("Running test %s on database %s", testName, dbname))
+		ctx, cancel := context.WithTimeout(context.Background(), test.Timeout)
+		_, err := fetchTest(ctx, cf, dbname, test)
+		cancel()
+		if err != nil {
+			return err
+		}
 		/*
 		   cur = conn.cursor()
 		   q_started = time.time()
@@ -308,4 +321,19 @@ func runTest(cf config.Config, testName string) error {
 		*/
 	}
 	return nil
+}
+
+func fetchTest(ctx context.Context, cf config.Config, dbname string, test config.Test) (map[string]interface{}, error) {
+	db := cf.Databases[dbname]
+	if db.Driver == "postgresql" {
+		conn, err := pgx.Connect(ctx, db.DSN)
+		if err != nil {
+			return nil, fmt.Errorf("unable to connect to database %s: %w", dbname, err)
+		}
+		defer conn.Close(ctx)
+		return nil, fmt.Errorf("Not yet!")
+	} else {
+		// https://github.com/go-sql-driver/mysql?tab=readme-ov-file#dsn-data-source-name ???
+		return nil, fmt.Errorf("Not yet!")
+	}
 }

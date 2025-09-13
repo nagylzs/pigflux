@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -15,12 +16,8 @@ type Config struct {
 }
 
 type Database struct {
-	Host     string `yaml:"host"`
-	Port     uint16 `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Database string `yaml:"database"`
-	Driver   string `yaml:"driver"`
+	DSN    string `yaml:"dsn"`
+	Driver string `yaml:"driver"`
 }
 
 type Influx struct {
@@ -48,6 +45,7 @@ type Test struct {
 	Tags        map[string]string `yaml:"tags"`
 	Fields      []string          `yaml:"fields"`
 	Order       int               `yaml:"order"`
+	Timeout     time.Duration     `yaml:"timeout"`
 	Measurement string            `yaml:"measurement"`
 	InheritFrom string            `yaml:"inherit_from"`
 	SQL         string            `yaml:"sql"`
