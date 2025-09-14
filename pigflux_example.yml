@@ -104,7 +104,7 @@ tests:
     # The SQL that will be used to get values for the fields, it must return a single row
     sql: |
       select
-        field1, field2
+        field1, field2, tag3, tag4
       from table_name_01 order by 2 limit 1
   measurement_02:
     # measurement_02 will be run after measurement_01
@@ -112,7 +112,8 @@ tests:
     measurement: "measurement_name_02"
     databases: [ "database_01" ]
     target_databases: ["database_03"]
+    fields: [ "field1", "field2" ]
     sql: |
       select
-        field3, field4
+        field1, field2, tag3
       from table_name_02 order by 2 limit 1

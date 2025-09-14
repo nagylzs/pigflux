@@ -71,7 +71,6 @@ func (t Test) Check(config *Config) error {
 			return fmt.Errorf("database '%s' does not exist", dbname)
 		}
 	}
-	
 	if len(t.Influxes) > 0 {
 		for _, influx := range t.Influxes {
 			_, ok := config.Influxes[influx]
@@ -109,6 +108,14 @@ func (t Test) Check(config *Config) error {
 	}
 	if len(t.Influxes) == 0 && len(t.Influxes2) == 0 && len(t.Influxes3) == 0 && len(t.TargetDatabases) == 0 {
 		return fmt.Errorf("no targets specified (influxes, influxes2, influxes3 and targetdatabase are all empty)")
+	}
+	if t.Fields == nil || len(t.Fields) == 0 {
+		return fmt.Errorf("no fields specified")
+	}
+	for _, field := range t.Fields {
+		if !IsIdentifierLike(field) {
+			return fmt.Errorf("field '%s' is not a valid identifier", field)
+		}
 	}
 	return nil
 }

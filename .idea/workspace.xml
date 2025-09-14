@@ -5,15 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="42c3e033-2e8d-4c5a-888e-bf42a0e43dd3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/internal/config/parse.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/pigflux/connector.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/pigflux/runtest.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/pigflux/sender.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/pigflux/pigflux.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/pigflux/pigflux.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/pigflux/runtest.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pigflux/runtest.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/pigflux/sender.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pigflux/sender.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pigflux_example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/pigflux_example.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -45,7 +41,7 @@
     "DefaultGoTemplateProperty": "Go File",
     "Go Build.go build github.com/nagylzs/pigflux/cmd/pigflux.executor": "Run",
     "Go Build.help.executor": "Run",
-    "Go Build.test.executor": "Debug",
+    "Go Build.test.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.GoLinterPluginOnboarding": "true",
     "RunOnceActivity.GoLinterPluginStorageMigration": "true",
@@ -113,5 +109,16 @@
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/internal/pigflux/sender.go</url>
+          <line>97</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

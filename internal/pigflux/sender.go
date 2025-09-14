@@ -137,7 +137,7 @@ func genInsertSQL(sql string, result TestResult) (string, []interface{}, error) 
 				}
 				appendParam(result.Fields[field])
 			}
-		} else if t == "{TAVALUES}" {
+		} else if t == "{TAGVALUES}" {
 			fnames := slices.Sorted(maps.Keys(result.Tags))
 			for i, field := range fnames {
 				if i > 0 {
@@ -152,7 +152,7 @@ func genInsertSQL(sql string, result TestResult) (string, []interface{}, error) 
 			}
 			appendParam(string(js))
 		} else if t == "{TAGS_JSON}" {
-			js, err := json.Marshal(result.Fields)
+			js, err := json.Marshal(result.Tags)
 			if err != nil {
 				return "", nil, err
 			}
