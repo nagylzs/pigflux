@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="42c3e033-2e8d-4c5a-888e-bf42a0e43dd3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/internal/config/example.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/pigflux/pigflux.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/pigflux/pigflux.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/config/args.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/args.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/config/parse.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/parse.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/pigflux/runtest.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pigflux/runtest.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/pigflux/sender.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pigflux/sender.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pigflux_example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/pigflux_example.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file:///usr/lib/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="32Y0Mb1dva1Fwyslm0tXSVVWZtB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Go Build.go build github.com/nagylzs/pigflux/cmd/pigflux.executor&quot;: &quot;Run&quot;,
+    &quot;Go Build.help.executor&quot;: &quot;Run&quot;,
+    &quot;Go Build.test.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.GoLinterPluginOnboarding&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.GoLinterPluginStorageMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;go&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/gandalf/projects/pigflux_go&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/config" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Build.test">
+    <configuration name="help" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="pigflux_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <parameters value="-h" />
+      <kind value="PACKAGE" />
+      <package value="github.com/nagylzs/pigflux/cmd/pigflux" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/pigflux/pigflux.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="pigflux_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <parameters value="-c pigflux.yml --count 3 --wait 10s --debug" />
+      <kind value="PACKAGE" />
+      <package value="github.com/nagylzs/pigflux/cmd/pigflux" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/pigflux/pigflux.go" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Go Build.test" />
+      <item itemvalue="Go Build.help" />
+    </list>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-f466f9b0953e-3d2cccfc42a2-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-252.25557.189" />
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-GO-252.25557.189" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="42c3e033-2e8d-4c5a-888e-bf42a0e43dd3" name="Changes" comment="" />
+      <created>1757582151493</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1757582151493</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>
