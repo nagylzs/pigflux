@@ -17,6 +17,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
+	readme "github.com/nagylzs/pigflux"
 	"github.com/nagylzs/pigflux/internal/config"
 	"github.com/nagylzs/pigflux/internal/pigflux"
 	"github.com/nagylzs/pigflux/internal/signal"
@@ -43,6 +44,11 @@ func main() {
 
 	if args.ShowConfigExample {
 		config.ShowConfigExample()
+		os.Exit(0)
+	}
+
+	if args.ShowReadme {
+		readme.ShowReadme()
 		os.Exit(0)
 	}
 

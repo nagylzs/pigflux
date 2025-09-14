@@ -38,7 +38,7 @@ func RunTest(cf config.Config, testName string) error {
 			for name, tag := range test.Tags {
 				fr.Tags[name] = tag
 			}
-			slog.Debug(fmt.Sprintf("Test %s point #%d on database %s: fields=%v+ tags=%v+",
+			slog.Debug(fmt.Sprintf("Test %s point #%d on database %s: fields=%v tags=%v",
 				testName, idx, dbname, fr.Fields, fr.Tags))
 			testResults = append(testResults, TestResult{
 				Measurement: test.Measurement,

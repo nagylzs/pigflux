@@ -3,13 +3,19 @@
 Query statistics from SQL databases, and send results to influxdb and other SQL databases.
 You can configure multiple postgresql/mysql and influxdb instances.
 
+![PigFlux](diagram.png)
+
 ## Build
+
+For the impatient:
 
 ```
 git clone git@github.com:nagylzs/pigflux.git
 cd pigflux
-go -o pigflux cmd/pigflux.go
+go cmd/pigflux/pigflux.go
 ```
+
+Please note that this will not include version information.
 
 ## Configuration
 
@@ -18,7 +24,7 @@ go -o pigflux cmd/pigflux.go
 
 Main configuration sections:
 
-* **databases** - named configurations for PostgreSQL instances
+* **databases** - named configurations for various SQL database instances (PostgreSQL, MySQL, MS-SQL)
 * **influxes** - named configurations for InfluxDb v1 instances
 * **influxes2** - named configurations for InfluxDb v2 instances
 * **influxes3** - named configurations for InfluxDb v3 instances
@@ -27,12 +33,12 @@ Main configuration sections:
 Each test can contain the following values:
 
 * **databases** - a list of database configuration names. The test will be run on the given databases. (
-  You can run the same test on multiple PostgreSQL databases)
-
+  You can run the same test on multiple databases)
 * **influxes** - a list of influxdb v1 configuration names. Test results will be sent here.
 * **influxes2** - a list of influxdb v2 configuration names. Test results will be sent here.
 * **influxes3** - a list of influxdb v3 configuration names. Test results will be sent here.
-* **target_databases** - a list databases, test results will be sent here. Target databases must have insert_sql configured!
+* **target_databases** - a list of SQL databases, test results will be sent here. Target databases must have
+  insert_sql configured!
 * **measurement** - destination measurement name for the test
 * **tags** - an object (key-value pairs) that will be used for tagging the measurement. Please note that InfluxDb
   supports string tag values only. The name of the database will be added as an extra tag called `database_name`. 
@@ -46,11 +52,13 @@ Each test can contain the following values:
 * **inherit_from** - name of another test that will be used to inherit almost all properties from. The is_template and
   inherit_from properties cannot be inherited.
 
+Use `pigflux --show-example-config` to get an example configuration.
+
 ## Run
 
 You can start pigflux from command line or cron:
 
-  pipenv run python pigflux.py -c pigflux.yml
+    pigflux --config my_config.yml
 
 Use `--help` for command line options.
 
@@ -59,13 +67,4 @@ Use `--help` for command line options.
 The easiest way to run pigflux is to use the [non-sucking service manager](https://nssm.cc/download).
 
 * Download NSSM [from here](https://nssm.cc/download).
-* Create a new service with:
-
-    nssm.exe install pigflux
-  
-* Use the following settings: TODO
-    
-## TODO
-
-There should be a way to merge tags from ancestor/template tests. The current implementation simply overwrites all tags.
-Possible solution would be to add a new global `tags` section, and add a new `merge_tags` property to tests. 
+* Create a new service with `nssm.exe install pigflux`

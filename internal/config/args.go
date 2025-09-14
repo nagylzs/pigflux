@@ -17,4 +17,5 @@ type PigfluxCLIArgs struct {
 	Count             int      `long:"count" description:"Number of test runs. Defaults to 1. Use -1 to run indefinitely." default:"1"`
 	Wait              string   `short:"w" long:"wait" description:"Time to wait between test runs. Defaults to 10s" default:"10s"`
 	ShowConfigExample bool     `long:"show-config-example" description:"Show example config file"`
+	ShowReadme        bool     `long:"show-readme" description:"Show readme (markup)"`
 }
