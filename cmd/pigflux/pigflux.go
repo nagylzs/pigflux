@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jessevdk/go-flags"
@@ -37,6 +38,11 @@ func main() {
 
 	if args.ShowVersion {
 		version.PrintVersion()
+		os.Exit(0)
+	}
+
+	if args.ShowConfigExample {
+		config.ShowConfigExample()
 		os.Exit(0)
 	}
 

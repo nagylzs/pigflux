@@ -19,7 +19,10 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/apache/arrow-go/v18 v18.4.0 // indirect
 	github.com/deepmap/oapi-codegen v1.6.0 // indirect
+	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
+	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
+	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/google/flatbuffers v25.2.10+incompatible // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/influxdata/line-protocol/v2 v2.2.1 // indirect

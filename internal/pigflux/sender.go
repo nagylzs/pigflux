@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/InfluxCommunity/influxdb3-go/v2/influxdb3"
@@ -18,92 +19,133 @@ import (
 	"github.com/nagylzs/pigflux/internal/config"
 )
 
-func SendTestResultsV1(ctx context.Context, cf config.Config, name string, results []TestResult) {
+func SendTestResultsV1(ctx context.Context, cf config.Config, name string, results []TestResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	test := cf.Tests[name]
 	conns := ConnectInfluxes(cf, test.Influxes)
 	defer CloseInfluxes(conns)
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(len(conns))
 	for _, conn := range conns {
-		// TODO do these parallel
-		bp, err := client.NewBatchPoints(client.BatchPointsConfig{Database: conn.Cfg.Database})
+		go SendTestResultsV1Conn(ctx, cf, name, results, conn, wg2)
+	}
+	wg2.Wait()
+}
+
+func SendTestResultsV1Conn(ctx context.Context, cf config.Config, name string, results []TestResult, conn IConnV1, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	bp, err := client.NewBatchPoints(client.BatchPointsConfig{Database: conn.Cfg.Database})
+	if err != nil {
+		slog.Error("could not create batch points", "type", "influx", "name", conn.Name, "error", err)
+		return
+	}
+	for _, result := range results {
+		pt, err := client.NewPoint(
+			result.Measurement,
+			result.Tags,
+			result.Fields,
+			time.Now(),
+		)
 		if err != nil {
-			slog.Error("could not create batch points", "type", "influx", "name", conn.Name, "error", err)
-			continue
+			slog.Error("could not create point", "type", "influx", "name", conn.Name, "measurement", result.Measurement, "error", err)
 		}
-		for _, result := range results {
-			pt, err := client.NewPoint(
-				result.Measurement,
-				result.Tags,
-				result.Fields,
-				time.Now(),
-			)
-			if err != nil {
-				slog.Error("could not create point", "type", "influx", "name", conn.Name, "measurement", result.Measurement, "error", err)
-			}
-			bp.AddPoint(pt)
-		}
-		if err := conn.Client.Write(bp); err != nil {
-			slog.Error("could not write batch points", "type", "influx", "name", conn.Name, "error", err)
-		}
+		bp.AddPoint(pt)
+	}
+	if err := conn.Client.Write(bp); err != nil {
+		slog.Error("could not write batch points", "type", "influx", "name", conn.Name, "error", err)
 	}
 }
 
-func SendTestResultsV2(ctx context.Context, cf config.Config, name string, results []TestResult) {
+func SendTestResultsV2(ctx context.Context, cf config.Config, name string, results []TestResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+	points := make([]*write.Point, 0, len(results))
+	for _, result := range results {
+		p := influxdb2.NewPoint(result.Measurement,
+			result.Tags,
+			result.Fields,
+			time.Now())
+		points = append(points, p)
+	}
+
 	test := cf.Tests[name]
 	conns := ConnectInfluxes2(cf, test.Influxes2)
 	defer CloseInfluxes2(conns)
+
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(len(conns))
 	for _, conn := range conns {
-		points := make([]*write.Point, 0, len(results))
-		for _, result := range results {
-			p := influxdb2.NewPoint(result.Measurement,
-				result.Tags,
-				result.Fields,
-				time.Now())
-			points = append(points, p)
-		}
-		err := conn.WriteAPI.WritePoint(ctx, points...)
-		if err != nil {
-			slog.Error("could not write batch points", "type", "influx2", "name", conn.Name, "error", err)
-		}
+		go SendTestResultsV2Conn(ctx, cf, name, points, conn, wg2)
+	}
+	wg2.Wait()
+}
+
+func SendTestResultsV2Conn(ctx context.Context, cf config.Config, name string, points []*write.Point, conn I2ConnV2, wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := conn.WriteAPI.WritePoint(ctx, points...)
+	if err != nil {
+		slog.Error("could not write batch points", "type", "influx2", "name", conn.Name, "error", err)
 	}
 }
 
-func SendTestResultsV3(ctx context.Context, cf config.Config, name string, results []TestResult) {
+func SendTestResultsV3(ctx context.Context, cf config.Config, name string, results []TestResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+	points := make([]*influxdb3.Point, 0, len(results))
+	for _, result := range results {
+		p := influxdb3.NewPoint(
+			result.Measurement,
+			result.Tags,
+			result.Fields,
+			time.Now(),
+		)
+		points = append(points, p)
+	}
+
 	test := cf.Tests[name]
 	conns := ConnectInfluxes3(cf, test.Influxes3)
 	defer CloseInfluxes3(conns)
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(len(conns))
 	for _, conn := range conns {
-		points := make([]*influxdb3.Point, 0, len(results))
-		for _, result := range results {
-			p := influxdb3.NewPoint(
-				result.Measurement,
-				result.Tags,
-				result.Fields,
-				time.Now(),
-			)
-			points = append(points, p)
-		}
-		err := conn.Conn.WritePoints(ctx, points)
-		if err != nil {
-			slog.Error("could not write batch points", "type", "influx3", "name", conn.Name, "error", err)
-		}
+		go SendTestResultsV3Conn(ctx, cf, name, points, conn, wg2)
+	}
+	wg2.Wait()
+}
+
+func SendTestResultsV3Conn(ctx context.Context, cf config.Config, name string, points []*influxdb3.Point, conn I2ConnV3, wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := conn.Conn.WritePoints(ctx, points)
+	if err != nil {
+		slog.Error("could not write batch points", "type", "influx3", "name", conn.Name, "error", err)
 	}
 }
 
-func SendTestResultsDb(ctx context.Context, cf config.Config, name string, results []TestResult) {
+func SendTestResultsDb(ctx context.Context, cf config.Config, name string, results []TestResult, wg *sync.WaitGroup) {
+	defer wg.Done()
 	test := cf.Tests[name]
 	conns := ConnectDatabases(cf, test.TargetDatabases)
 	defer CloseDatabases(conns)
+
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(len(conns))
 	for _, conn := range conns {
-		for _, result := range results {
-			sql, params, err := genInsertSQL(conn.Cfg.InsertSQL, result)
-			if err != nil {
-				slog.Error("could not generate insert sql", "type", "database", "name", conn.Name, "error", err)
-				continue
-			}
-			_, err = conn.Conn.Exec(sql, params...)
-			if err != nil {
-				slog.Error("could execute insert sql", "type", "database", "name", conn.Name, "error", err)
-			}
+		go SendTestResultsDbConn(ctx, cf, name, results, conn, wg2)
+	}
+	wg2.Wait()
+}
+
+func SendTestResultsDbConn(ctx context.Context, cf config.Config, name string, results []TestResult, conn I2ConnDb, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for _, result := range results {
+		sql, params, err := genInsertSQL(conn.Cfg.InsertSQL, result)
+		if err != nil {
+			slog.Error("could not generate insert sql", "type", "database", "name", conn.Name, "error", err)
+			continue
+		}
+		_, err = conn.Conn.Exec(sql, params...)
+		if err != nil {
+			slog.Error("could execute insert sql", "type", "database", "name", conn.Name, "error", err)
 		}
 	}
 }

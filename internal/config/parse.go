@@ -47,8 +47,8 @@ func (cf *Config) ParseConfig() error {
 		if db.Driver == "" {
 			return fmt.Errorf("database %s: driver is not given/empty", dbname)
 		}
-		if db.Driver != "pgx" && db.Driver != "mysql" {
-			return fmt.Errorf("database %s: driver %s not supported, only pgx and mysql are available", dbname, db.Driver)
+		if db.Driver != "pgx" && db.Driver != "mysql" && db.Driver != "mssql" {
+			return fmt.Errorf("database %s: driver %s not supported, only pgx, mysql, mssql are available", dbname, db.Driver)
 		}
 	}
 	for name := range cf.Tests {

@@ -1,15 +1,20 @@
 # pigflux
 
-Report statistics from postgresql/mysql database to influxdb and/or postgresql. 
+Query statistics from SQL databases, and send results to influxdb and other SQL databases.
 You can configure multiple postgresql/mysql and influxdb instances.
 
 ## Build
 
-TODO
+```
+git clone git@github.com:nagylzs/pigflux.git
+cd pigflux
+go -o pigflux cmd/pigflux.go
+```
 
 ## Configuration
 
-Copy `pigflux_example.yml` into `pigflux.yml`, and edit to your needs.
+* Use the `-c`/`--config` or `--config-dir` command line option to specify configuration.  
+* Use `pigflux --show-example-config` to print example configuration (`pigflux_example.yml`). 
 
 Main configuration sections:
 
