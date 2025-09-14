@@ -189,9 +189,12 @@ func parseConfig(config *config.Config) error {
 			return err
 		}
 	}
-	for _, db := range config.Databases {
+	for dbname, db := range config.Databases {
+		if db.Driver == "" {
+			return fmt.Errorf("database %s: driver is not given/empty", dbname)
+		}
 		if db.Driver != "pgx" && db.Driver != "mysql" {
-			return fmt.Errorf("database driver %s not supported, only pgx and mysql are available", db.Driver)
+			return fmt.Errorf("database %s: driver %s not supported, only pgx and mysql are available", dbname, db.Driver)
 		}
 	}
 	for name := range config.Tests {
@@ -231,6 +234,12 @@ func inheritProps(config *config.Config, name string, used *set.Set[string]) err
 	}
 	if test.Influxes2 == nil || len(test.Influxes2) == 0 {
 		test.Influxes2 = ihf.Influxes2
+	}
+	if test.Influxes3 == nil || len(test.Influxes3) == 0 {
+		test.Influxes3 = ihf.Influxes3
+	}
+	if test.TargetDatabases == nil || len(test.TargetDatabases) == 0 {
+		test.TargetDatabases = ihf.TargetDatabases
 	}
 	if test.Tags == nil || len(test.Tags) == 0 {
 		test.Tags = ihf.Tags
