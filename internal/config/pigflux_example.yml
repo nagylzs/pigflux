@@ -10,6 +10,11 @@ databases:
     dsn: "postgres://username:password@localhost:5432/database_name"
     diver: "mysql"
   database_03:
+    # MS SQL example
+    # https://github.com/denisenkom/go-mssqldb?tab=readme-ov-file#connection-parameters-and-dsn
+    dsn: "sqlserver://username:password@host/instance?param1=value&param2=value"
+    diver: "sqlserver"
+  database_04:
     # if you want to use a database to store test results, then you must specify the insert sql
     # PostgreSQL example
     dsn: "postgres://username:password@example.com:5432/database_name"
@@ -27,11 +32,12 @@ databases:
     #    {TAGS_JSON} - JSON serialized tags (string), added as a parameter
     #    {FIELDS_RAW} - fields as a map, added as a parameter (the driver must be able to handle it)
     #    {TAGS_RAW} - tags as a map, added as a parameter (the driver must be able to handle it)
-    #
+    #    {FIELDS[name]} - access field value by name, added as a parameter
+    #    {TAGS[name]} - access tag value by name, added as a parameter
     #
     insert_sql: |
       INSERT INTO {MEASUREMENT_NAME}("time",{FIELDNAMES},{TAGNAMES}) VALUES (now(), {FIELDVALUES} ,{TAGVALUES} )
-  database_04:
+  database_05:
     dsn: "postgres://username:password@example.com:5432/database_name"
     diver: "pgx"
     # Alternative sql syntax that uses a jsonb fields for storing fields and tags

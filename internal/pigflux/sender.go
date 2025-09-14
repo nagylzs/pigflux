@@ -150,6 +150,9 @@ func SendTestResultsDbConn(ctx context.Context, cf config.Config, name string, r
 	}
 }
 
+var FieldName = regexp.MustCompile(`^\{FIELDS\[([^\[\]]+)]}$`)
+var TagName = regexp.MustCompile(`^\{TAGS\[([^\[\]]+)]}$`)
+
 func genInsertSQL(sql string, result TestResult) (string, []interface{}, error) {
 	tokens := SplitIntoTokens(sql)
 	params := make([]interface{}, 0)
@@ -204,7 +207,15 @@ func genInsertSQL(sql string, result TestResult) (string, []interface{}, error) 
 		} else if t == "{TAGS_RAW}" {
 			appendParam(result.Tags)
 		} else {
-			sql += t
+			m1 := FieldName.FindAllStringSubmatch(t, -1)
+			m2 := TagName.FindAllStringSubmatch(t, -1)
+			if m1 != nil && len(m1) > 0 {
+				appendParam(result.Fields[m1[0][1]])
+			} else if m2 != nil && len(m2) > 0 {
+				appendParam(result.Tags[m2[0][1]])
+			} else {
+				sql += t
+			}
 		}
 	}
 	return sql, params, nil
