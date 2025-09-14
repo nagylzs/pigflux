@@ -14,14 +14,32 @@ databases:
     # PostgreSQL example
     dsn: "postgres://username:password@example.com:5432/database_name"
     diver: "pgx"
+    #
+    # Variables:
+    #
+    #    {MEASUREMENT_NAME} - replaced with the name of the measurement, in SQL source (e.g. not as a parameter)
+    #    {MEASUREMENT} - measurement name, added as a parameter,
+    #    {FIELDNAMES} - a list of fields names, ordered, added as SQL source
+    #    {TAGNAMES} - a list of tag names, ordered, added as SQL source
+    #    {FIELDVALUES} - a list of field values, ordered by field name, added as a comma separated list of parameters
+    #    {TAGVALUES} - a list of tag values, ordered by tag name, added as a comma separated list of parameters
+    #    {FIELDS_JSON} - JSON serialized fields (string), added as a parameter
+    #    {TAGS_JSON} - JSON serialized tags (string), added as a parameter
+    #    {FIELDS_RAW} - fields as a map, added as a parameter (the driver must be able to handle it)
+    #    {TAGS_RAW} - tags as a map, added as a parameter (the driver must be able to handle it)
+    #
+    #
     insert_sql: |
-      INSERT INTO "{MEASUREMENT}"("time",{FIELDNAMES},{TAGNAMES}) VALUES (now(), {FIELDVALUES} ,{TAGVALUES} )
+      INSERT INTO {MEASUREMENT_NAME}("time",{FIELDNAMES},{TAGNAMES}) VALUES (now(), {FIELDVALUES} ,{TAGVALUES} )
   database_04:
     dsn: "postgres://username:password@example.com:5432/database_name"
     diver: "pgx"
     # Alternative sql syntax that uses a jsonb fields for storing fields and tags
     insert_sql: |
-      INSERT INTO measurements("time",measurement_name,fields,tags) VALUES (now(), {MEASUREMENT}, {FIELDS_JSON}::jsonb ,{TAG_JSON}::jsonb )
+      INSERT INTO measurements("time",measurement_name,fields,tags) VALUES (now(), {MEASUREMENT}, 
+        cast({FIELDS_JSON} as jsonb) , -- FIELDS_JSON and TAGS_JSON will add a string parameter with json source
+        {TAGS_RAW}::jsonb  -- FIELDS_RAW and TAGS_RAW will pass the fields/tags map to the db driver unaltered
+      )
 influxes:
   # for influx v1 you need address, username, password
   # see https://github.com/influxdata/influxdb/tree/1.8/client#connecting-to-your-database
@@ -30,6 +48,8 @@ influxes:
     username: "user_name"
     password: "password"
     database: "database_name"
+    # this is used when sending measurements
+    send_timeout: "10s"
   influx_srv_02:
     url: "https://example.com:1234"
     verify_ssl: false
@@ -44,11 +64,15 @@ influxes2:
     org: "dcce8cedb3dad2dc"
     bucket: "iot01"
     token: "B0fXt_c4hYVUjbpXLnrHkjX-UIBeO0YsvQafascEfdGsdVasE_vFrSQhQpZivx8avwwcsax790yw_dSGyufffw=="
+    # this is used when sending measurements
+    send_timeout: "10s"
 influxes3:
   # for influx v3, you can use a connection string url
   # example here https://github.com/InfluxCommunity/influxdb3-go?tab=readme-ov-file#instantiate-using-a-connection-string
   influx3_srv_01:
     url: "https://cluster.influxdata.io/?token=DATABASE_TOKEN&database=DATABASE_NAME"
+    # this is used when sending measurements
+    send_timeout: "10s"
 tests:
   defaults:
     # template will never run, they only serve as a base config that tests can be inherited from
@@ -88,7 +112,6 @@ tests:
     measurement: "measurement_name_02"
     databases: [ "database_01" ]
     target_databases: ["database_03"]
-    fields: [ "field3", "field4" ]
     sql: |
       select
         field3, field4

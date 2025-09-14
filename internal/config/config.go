@@ -55,6 +55,7 @@ type Test struct {
 	Measurement     string            `yaml:"measurement"`
 	InheritFrom     string            `yaml:"inherit_from"`
 	SQL             string            `yaml:"sql"`
+	QueryTimeout    time.Duration     `yaml:"query_timeout" default:"30s"`
 }
 
 func (t Test) Check(config *Config) error {
@@ -70,7 +71,7 @@ func (t Test) Check(config *Config) error {
 			return fmt.Errorf("database '%s' does not exist", dbname)
 		}
 	}
-
+	
 	if len(t.Influxes) > 0 {
 		for _, influx := range t.Influxes {
 			_, ok := config.Influxes[influx]
